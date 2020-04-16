@@ -1,0 +1,96 @@
+#include <iostream>
+#include <sstream>
+using namespace std;
+
+int f(int x,int y,int k,int a[9][9])
+{
+        int count=0;
+        for(int i=0;i<9;i++)
+        {
+            if(a[i][y]==k)
+            count++;
+            if(a[x][i]==k)
+            count++;
+            if(count>0)
+            break;
+        }
+        int m,n;
+        m=x/3,n=y/3;
+        for(int l=m*3;l<m*3+3;l++)
+            for(int j=n*3;j<n*3+3;j++)
+                if(a[l][j]==k)
+                count++;
+
+        if (count==0)
+        return 1; // k can come
+        else
+        return 0; // means k cannot come at x,y
+
+}
+
+int main()
+{
+    int n;
+    int count=0;
+    cout <<"Enter the number of known numbers-";
+    cin >> n;
+
+    cout << "Enter the known numbers with positions(format-Row,Column,Number Eg:1,1,1): ";
+    int a[9][9]={0};
+    int b[81-n];
+    while(n--)
+    {
+        string s;
+        cin >> s;
+        stringstream ss;
+        ss << s;
+        int n1,n2,n3;
+        char ch;
+        ss >> n1 >> ch >>n2 >>ch >> n3;
+        a[n1-1][n2-1]=n3;
+    }
+    int k=0;              // storing the indices of empty cells to an array b
+    for(int i=0;i<9;i++)
+        for(int j=0;j<9;j++)
+            if(a[i][j]==0)
+                {
+                    b[k]=i*9+j;
+                    k++;
+                }
+
+    for(int c=0;c<k;c++)
+        {
+            int flag=0;
+            if(a[b[c]/9][b[c]%9]==9)
+            {
+                a[b[c]/9][b[c]%9]=0;
+                c=c-2;
+                flag=1;
+            }
+            if(flag==0)
+            {
+                for(int i=a[b[c]/9][b[c]%9]+1;i<10;i++)
+                if(f(b[c]/9,b[c]%9,i,a)==1)
+                {
+                    a[b[c]/9][b[c]%9]=i;
+                    cout <<b[c]/9+1<<" "<<b[c]%9+1<<" "<<i<<endl; //showing which number is assignes at whih position
+                    count++;
+                    break;
+                }
+            else if(i==9)
+            {
+                a[b[c]/9][b[c]%9]=0;
+                c=c-2;
+            }
+        }
+     }
+    for(int i=0;i<9;i++)
+        {
+            for(int j=0;j<9;j++)
+                cout<<a[i][j]<<" ";
+            cout<<endl;
+        }
+    cout<<endl<<count;
+
+    return 0;
+}
