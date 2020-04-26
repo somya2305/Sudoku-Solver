@@ -1,0 +1,890 @@
+#include <iostream>
+#include <sstream>
+#include <algorithm>
+#include <vector>
+using namespace std;
+
+int f(int x,int y,int k,int a[9][9])
+{
+        int count=0;
+        for(int i=0;i<9;i++)
+        {
+            if(a[i][y]==k)
+            count++;
+            if(a[x][i]==k)
+            count++;
+            if(count>0)
+            break;
+        }
+        int m,n;
+        m=x/3,n=y/3;
+        for(int l=m*3;l<m*3+3;l++)
+            for(int j=n*3;j<n*3+3;j++)
+                if(a[l][j]==k)
+                count++;
+
+        if (count==0)
+        return 1; // k can come
+        else
+        return 0; // means k cannot come at x,y
+
+}
+
+int f0(int x,int y,int p[81][9])
+{
+    int c=0;
+    for(int k=0;k<9;k++)
+                if(p[x*9+y][k]==1)
+                c++;
+    return c;
+}
+
+void f1(int x,int y,int a[9][9],int p[81][9])
+{
+    if(a[x][y]==0)
+        for(int i=1;i<=9;i++)
+        if(f(x,y,i,a)!=1)
+            p[x*9+y][i-1]=0;
+}
+
+void f2(int x,int y,int a[9][9],int p[81][9])
+{
+    if(a[x][y]==0)
+    {
+    for(int i=1;i<10;i++)
+        if(p[x*9+y][i-1]==1)
+            {
+                int m,n;
+                m=x/3,n=y/3;
+                int count=0;
+                for(int l=m*3;l<m*3+3;l++)
+                    for(int j=n*3;j<n*3+3;j++)
+                        if(a[l][j]==0)
+                            if(p[l*9+j][i-1]==1)
+                              count++;
+                if (count==1)
+                   for(int k=0;k<9;k++)
+                    if(k!=i-1)
+                    p[x*9+y][k]=0;
+                count=0;
+                for(int z=0;z<9;z++)
+                {
+                    if(p[x*9+z][i-1]==1)
+                        count++;
+                }
+                if (count==1)
+                   for(int k=0;k<9;k++)
+                    if(k!=i-1)
+                    p[x*9+y][k]=0;
+                count=0;
+                for(int z=0;z<9;z++)
+                {
+                    if(p[z*9+y][i-1]==1)
+                        count++;
+                }
+                if (count==1)
+                   for(int k=0;k<9;k++)
+                    if(k!=i-1)
+                    p[x*9+y][k]=0;
+            }
+    }
+
+}
+
+void f3(int x,int a[9][9],int p[81][9])
+{
+    for(int i=0;i<9;i++)
+    {
+       if(a[x][i]==0)
+        {
+            int flag=0;
+            vector<int>v;
+            if(f0(x,i,p)==3 || f0(x,i,p)==2)
+            {
+                v.push_back(i);
+                for(int j=i+1;j<9;j++)
+                {
+                    if(a[x][j]==0)
+                    {
+                        int c1=0,c2=0;
+                        if(f0(x,j,p)==3 || f0(x,j,p)==2)
+                            for(int k=0;k<9;k++)
+                                if(p[x*9+j][k]|p[x*9+i][k]==1)
+                                    c1++;
+                        if(c1==3 || c1==2)
+                        {
+                            if(v.size()==2)
+                            {
+                                for(int k=0;k<9;k++)
+                                    if(p[x*9+i][k]|p[x*9+j][k]|p[x*9+v[1]][k]==1)
+                                        c2++;
+                                if(c2==3 || c2==2)
+                                {
+                                    v.push_back(j);
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                v.push_back(j);
+                                if(c1==2)
+                                    {flag=1;
+                                    break;}
+                            }
+                        }
+                    }
+                }
+            }
+            if(v.size()==3)
+            {
+                for(int k=0;k<9;k++)
+                    if(p[x*9+v[0]][k]==1 ||p[x*9+v[1]][k]==1 || p[x*9+v[2]][k]==1 )
+                        for(int j=0;j<9;j++)
+                            if(j!=v[0] && j!=v[1] && j!=v[2])
+                                p[x*9+j][k]=0;
+
+
+            }
+            else if(v.size()==2 && flag==1)
+            {
+                for(int k=0;k<9;k++)
+                    if(p[x*9+v[0]][k]==1)
+                        for(int j=0;j<9;j++)
+                            if(j!=v[0] && j!=v[1])
+                                p[x*9+j][k]=0;
+
+            }
+            v.clear();
+        }
+    }
+
+}
+
+void f4(int y,int a[9][9],int p[81][9])
+{
+    for(int i=0;i<9;i++)
+    {
+        if(a[i][y]==0)
+        {
+            int flag=0;
+            vector<int>v;
+            if(f0(i,y,p)==3 || f0(i,y,p)==2)
+            {
+                v.push_back(i);
+                for(int j=i+1;j<9;j++)
+                {
+                    if(a[j][y]==0)
+                    {
+                        int c1=0,c2=0;
+                        if(f0(j,y,p)==3 || f0(j,y,p)==2)
+                            for(int k=0;k<9;k++)
+                                if(p[j*9+y][k]|p[i*9+y][k]==1)
+                                    c1++;
+                        if(c1==3 || c1==2)
+                            {
+                                if(v.size()==2)
+                                {
+                                  for(int k=0;k<9;k++)
+                                        if(p[i*9+y][k]|p[j*9+y][k]|p[v[1]*9+y][k]==1)
+                                            c2++;
+                                    if(c2==3 || c2==2)
+                                    {v.push_back(j);
+                                    break;}
+                                }
+                                else
+                                {
+                                    v.push_back(j);
+                                    if(c1==2 )
+                                        {flag=1;
+                                        break;}
+                                }
+                            }
+
+
+                    }
+                }
+            }
+            if(v.size()==3)
+            {
+                for(int k=0;k<9;k++)
+                    if(p[v[0]*9+y][k]==1 ||p[v[1]*9+y][k]==1 || p[v[2]*9+y][k]==1 )
+                        for(int j=0;j<9;j++)
+                            if(j!=v[0] && j!=v[1] && j!=v[2])
+                               p[j*9+y][k]=0;
+
+
+            }
+            else if(v.size()==2 && flag==1)
+            {
+                 for(int k=0;k<9;k++)
+                    if(p[v[0]*9+y][k]==1 ||p[v[1]*9+y][k]==1)
+                        for(int j=0;j<9;j++)
+                            if(j!=v[0] && j!=v[1])
+                               p[j*9+y][k]=0;
+            }
+            v.clear();
+        }
+    }
+
+}
+
+void f5(int z,int a[9][9],int p[81][9])
+{
+    int x=z/3;
+    int y=z%3;
+    for(int i=0;i<9;i++)
+    {
+        if(a[x*3+i/3][y*3+i%3]==0)
+        {
+            int flag=0;
+            vector<int>v;
+            if(f0(x*3+i/3,y*3+i%3,p)==3 || f0(x*3+i/3,y*3+i%3,p)==2)
+            {
+                v.push_back(i);
+                for(int j=i+1;j<9;j++)
+                {
+                    if(a[x*3+j/3][y*3+j%3]==0)
+                    {
+                        int c1=0,c2=0;
+                        if(f0(x*3+j/3,y*3+j%3,p)==3 || f0(x*3+j/3,y*3+j%3,p)==2)
+                            for(int k=0;k<9;k++)
+                                if(p[x*27+y*3+j/3*9+j%3][k]|p[x*27+y*3+i/3*9+i%3][k]==1)
+                                    c1++;
+
+
+                        if(c1==3 || c1==2)
+                            {
+                                if(v.size()==2)
+                                {
+                                    for(int k=0;k<9;k++)
+                                        if(p[x*27+y*3+i/3*9+i%3][k]|p[x*27+y*3+j/3*9+j%3][k]|p[x*27+y*3+v[1]/3*9+v[1]%3][k]==1)
+                                            c2++;
+                                    if(c2==3 || c2==2)
+                                    {v.push_back(j);
+                                    break;}
+                                }
+                                else
+                                {
+                                    v.push_back(j);
+                                    if(c1==2)
+                                        {flag=1;
+                                        break;}
+                                }
+                            }
+                        }
+                }
+            }
+            if(v.size()==3)
+            {
+
+                for(int k=0;k<9;k++)
+                    if(p[x*27+y*3+v[0]/3*9+v[0]%3][k]==1||p[x*27+y*3+v[1]/3*9+v[1]%3][k]==1||p[x*27+y*3+v[2]/3*9+v[2]%3][k]==1)
+                        for(int j=0;j<9;j++)
+                            if(j!=v[0] && j!=v[1] && j!=v[2])
+                               p[x*27+y*3+j/3*9+j%3][k]=0;
+
+            }
+            else if(v.size()==2 && flag==1)
+            {
+               for(int k=0;k<9;k++)
+                    if(p[x*27+y*3+v[0]/3*9+v[0]%3][k]==1||p[x*27+y*3+v[1]/3*9+v[1]%3][k]==1)
+                        for(int j=0;j<9;j++)
+                            if(j!=v[0] && j!=v[1])
+                                p[x*27+y*3+j/3*9+j%3][k]=0;
+
+            }
+            v.clear();
+           }
+    }
+
+}
+
+void f6(int x,int a[9][9],int p[81][9])
+{
+    int flag=0;
+    for(int k=0;k<9;k++)
+    {
+        int c=0;
+        vector<int>v;
+        for(int i=0;i<9;i++)
+            if(a[x][i]==0)
+                if(p[x*9+i][k]==1)
+                        c++;
+        if(c==2 || c==3)
+        {
+            v.push_back(k);
+            for(int j=k+1;j<9;j++)
+            {
+                int c1=0;
+                for(int l=0;l<9;l++)
+                    if(a[x][l]==0)
+                    {
+                       if(p[x*9+l][j]==1)
+                                    c1++;
+                    }
+                if(c1==2 || c1==3)
+                {
+                    int c2=0;
+                    for(int l=0;l<9;l++)
+                        if(a[x][l]==0)
+                        {
+                            if(p[x*9+l][k]||p[x*9+l][j]==1)
+                                    c2++;
+                        }
+
+                    if(c2==2 || c2==3)
+                    {
+                        if(v.size()==1)
+                        {
+                            v.push_back(j);
+                            if(c2==2)
+                            {flag=1;
+                            break;}
+                        }
+                        else if(v.size()==2)
+                        {
+                            int c3=0;
+                            for(int l=0;l<9;l++)
+                                if(a[x][l]==0)
+                                {
+                                    if(p[x*9+l][k]||p[x*9+l][v[1]]||p[x*9+l][j]==1)
+                                        c3++;
+                                }
+                            if(c3==3)
+                            {v.push_back(j);
+                            break;}
+                        }
+                    }
+                }
+            }
+        }
+        if(v.size()==2 && flag==1)
+        {
+           for(int j=0;j<9;j++)
+                if(p[x*9+j][v[0]]||p[x*9+j][v[1]]==1)
+                    for(int l=0;l<9;l++)
+                        if(l!=v[0] && l!=v[1])
+                            p[x*9+j][l]=0;
+                break;
+        }
+         else if(v.size()==3)
+        {
+            for(int j=0;j<9;j++)
+                if(p[x*9+j][v[0]]||p[x*9+j][v[1]]||p[x*9+j][v[2]]==1)
+                    for(int l=0;l<9;l++)
+                        if(l!=v[0] && l!=v[1] && l!=v[2])
+                            p[x*9+j][l]=0;
+            break;
+        }
+
+    }
+}
+
+void f7(int y,int a[9][9],int p[81][9])
+{
+    int flag=0;
+    for(int k=0;k<9;k++)
+    {
+        int c=0;
+        vector<int>v;
+        for(int i=0;i<9;i++)
+            if(a[i][y]==0)
+                if(p[i*9+y][k]==1)
+                        c++;
+        if(c==2 || c==3)
+        {
+            v.push_back(k);
+            for(int j=k+1;j<9;j++)
+            {
+                int c1=0;
+                for(int l=0;l<9;l++)
+                    if(a[l][y]==0)
+                    {
+                       if(p[l*9+y][j]==1)
+                                    c1++;
+                    }
+                if(c1==2 || c1==3)
+                {
+                    int c2=0;
+                    for(int l=0;l<9;l++)
+                        if(a[l][y]==0)
+                        {
+                            if(p[l*9+y][k]||p[l*9+y][j]==1)
+                                    c2++;
+                        }
+
+                    if(c2==2 || c2==3)
+                    {
+                        if(v.size()==1)
+                        {
+                            v.push_back(j);
+                            if(c2==2)
+                            {flag=1;
+                            break;}
+                        }
+                        else if(v.size()==2)
+                        {
+                            int c3=0;
+                            for(int l=0;l<9;l++)
+                                if(a[l][y]==0)
+                                {
+                                    if(p[l*9+y][k]||p[l*9+y][v[1]]||p[l*9+y][j]==1)
+                                        c3++;
+                                }
+                            if(c3==3)
+                            {v.push_back(j);
+                            break;}
+                        }
+                    }
+                }
+            }
+        }
+        if(v.size()==2 && flag==1)
+        {
+            for(int j=0;j<9;j++)
+                if(p[j*9+y][v[0]]||p[j*9+y][v[1]]==1)
+                    for(int l=0;l<9;l++)
+                        if(l!=v[0] && l!=v[1])
+                            p[j*9+y][l]=0;
+            break;
+        }
+         else if(v.size()==3)
+        {
+           for(int j=0;j<9;j++)
+                if(p[j*9+y][v[0]]||p[j*9+y][v[1]]||p[j*9+y][v[2]]==1)
+                    for(int l=0;l<9;l++)
+                        if(l!=v[0] && l!=v[1] && l!=v[2])
+                            p[j*9+y][l]=0;
+            break;
+        }
+    }
+}
+
+void f8(int z,int a[9][9],int p[81][9])
+{
+    int x=z/3;
+    int y=z%3;
+    int flag=0;
+    for(int k=0;k<9;k++)
+    {
+        int c=0;
+        vector<int>v;
+        for(int i=0;i<9;i++)
+            if(a[x*3+i/3][y*3+i%3]==0)
+                if(p[x*27+i/3*9+y*3+i%3][k]==1)
+                        c++;
+        if(c==2 || c==3)
+        {
+            v.push_back(k);
+            for(int j=k+1;j<9;j++)
+            {
+                int c1=0;
+                for(int l=0;l<9;l++)
+                    if(a[x*3+l/3][y*3+l%3]==0)
+                    {
+                       if(p[x*27+l/3*9+y*3+l%3][j]==1)
+                                    c1++;
+                    }
+                if(c1==2 || c1==3)
+                {
+                    int c2=0;
+                    for(int l=0;l<9;l++)
+                        if(a[x*3+l/3][y*3+l%3]==0)
+                        {
+                            if(p[x*27+l/3*9+y*3+l%3][k]||p[x*27+l/3*9+y*3+l%3][j]==1)
+                                    c2++;
+                        }
+
+                    if(c2==2 || c2==3)
+                    {
+                        if(v.size()==1)
+                        {
+                            v.push_back(j);
+                            if(c2==2)
+                            {flag=1;
+                            break;}
+                        }
+                        else if(v.size()==2)
+                        {
+                            int c3=0;
+                            for(int l=0;l<9;l++)
+                                if(a[x*3+l/3][y*3+l%3]==0)
+                                {
+                                    if(p[x*27+l/3*9+y*3+l%3][k]||p[x*27+l/3*9+y*3+l%3][v[1]]||p[x*27+l/3*9+y*3+l%3][j]==1)
+                                        c3++;
+                                }
+                            if(c3==3)
+                            {v.push_back(j);
+                            break;}
+                        }
+                    }
+                }
+            }
+        }
+        if(v.size()==2 && flag==1)
+        {
+            for(int j=0;j<9;j++)
+                if(p[x*27+j/3*9+y*3+j%3][v[0]]||p[x*27+j/3*9+y*3+j%3][v[1]]==1)
+                    for(int l=0;l<9;l++)
+                        if(l!=v[0] && l!=v[1])
+                            p[x*27+j/3*9+y*3+j%3][l]=0;
+            break;
+        }
+         else if(v.size()==3)
+        {
+            for(int j=0;j<9;j++)
+                if(p[x*27+j/3*9+y*3+j%3][v[0]]||p[x*27+j/3*9+y*3+j%3][v[1]]||p[x*27+j/3*9+y*3+j%3][v[2]]==1)
+                    for(int l=0;l<9;l++)
+                        if(l!=v[0] && l!=v[1] && l!=v[2])
+                            p[x*27+j/3*9+y*3+j%3][l]=0;
+            break;
+        }
+
+    }
+}
+
+void f9(int x,int a[9][9],int p[81][9])
+{
+    for(int k=1;k<10;k++)
+    {
+        vector<int>v;
+        int col=3;
+        for(int i=0;i<9;i++)
+        {
+            if(a[x][i]==0)
+            {
+                if(p[x*9+i][k-1]==1)
+                v.push_back(i);
+            }
+        }
+        if(v.size()==3)
+        {
+            if(v[0]/3==v[1]/3 && v[1]/3==v[2]/3)
+                col=v[0]/3;
+        }
+        else if(v.size()==2)
+        {
+            if(v[0]/3==v[1]/3)
+                col=v[0]/3;
+        }
+        v.clear();
+        if(col<3)
+        {
+            for(int i=x/3*3;i<x/3*3+3;i++)
+                {
+                    if(i!=x)
+                    for(int j=col*3;j<col*3+3;j++)
+                        p[i*9+j][k-1]=0;
+                }
+        }
+    }
+}
+void f10(int y,int a[9][9],int p[81][9])
+{
+    for(int k=1;k<10;k++)
+    {
+        vector<int>v;
+        int row=3;
+        for(int i=0;i<9;i++)
+        {
+            if(a[i][y]==0)
+            {
+                if(p[i*9+y][k-1]==1)
+                v.push_back(i);
+            }
+        }
+        if(v.size()==3)
+        {
+            if(v[0]/3==v[1]/3 && v[1]/3==v[2]/3)
+                row=v[0]/3;
+        }
+        else if(v.size()==2)
+        {
+            if(v[0]/3==v[1]/3)
+                row=v[0]/3;
+
+        }
+        v.clear();
+        if(row<3)
+        {
+            for(int i=y/3*3;i<y/3*3+3;i++)
+                {
+                    if(i!=y)
+                    for(int j=row*3;j<row*3+3;j++)
+                    {
+                        p[j*9+i][k-1]=0;
+                    }
+                }
+        }
+    }
+}
+void f11(int z,int a[9][9],int p[81][9])
+{
+    for(int k=1;k<10;k++)
+    {
+        int x=z/3;
+        int y=z%3;
+        vector<int>v;
+        int row=3;
+        int col=3;
+        for(int i=0;i<9;i++)
+        {
+            if(a[x*3+i/3][y*3+i%3]==0)
+            {
+                if(p[x*27+i/3*9+y*3+i%3][k-1]==1)
+                v.push_back(i);
+            }
+        }
+        if(v.size()==3)
+        {
+            if(v[0]/3==v[1]/3 && v[1]/3==v[2]/3)
+                row=v[0]/3;
+            if(v[0]%3==v[1]%3 && v[1]%3==v[2]%3)
+                col=v[0]%3;
+        }
+        else if(v.size()==2)
+        {
+            if(v[0]/3==v[1]/3)
+                row=v[0]/3;
+            if(v[0]%3==v[1]%3)
+                col=v[0]%3;
+        }
+        if(row<3 || col<3)
+        {
+            for(int i=0;i<9;i++)
+            {
+                if(row<3)
+                    if(i/3!=y)
+                        p[x*27+row*9+i][k-1]=0;
+                if(col<3)
+                    if(i/3!=x)
+                        p[i*9+y*3+col][k-1]=0;
+            }
+        }
+    }
+}
+void f12(int x,int y,int a[9][9],int p[81][9])
+{
+        int count=0;
+        int r;
+        for(int k=0;k<9;k++)
+            if(p[x*9+y][k]==1)
+            { count++;
+            r=k+1;}
+        if(count==1)
+            a[x][y]=r;
+}
+void ff(int p[81][9],int a[9][9])
+{
+    int temp[81][9]={0};
+    int ts[9][9];
+    for(int i=0;i<81;i++)
+        for(int j=0;j<9;j++)
+            temp[i][j]=p[i][j];
+    for(int i=0;i<9;i++)
+        for(int j=0;j<9;j++)
+            ts[i][j]=a[i][j];
+    int i=0;
+    while(i<81)
+    {
+        int f=0;
+        if(f0(i/9,i%9,p)>=2)
+        {
+            int flag=0;
+            vector<int>v;
+            for(int k=0;k<9;k++)
+                if(p[i][k]==1)
+                    v.push_back(k);
+            unsigned int z=0;
+            while(z<v.size())
+            {
+                for(int j=0;j<v.size();j++)
+                    if(j!=z)
+                        {p[i][v[j]]=0;}
+
+                int rep=3;
+                while(rep--)
+                {
+                    for(int l=0;l<9;l++)
+                        for(int m=0;m<9;m++)
+                            f1(l,m,a,p);
+                    for(int l=0;l<9;l++)
+                        for(int m=0;m<9;m++)
+                            f2(l,m,a,p);
+                    for(int l=0;l<9;l++)
+                        for(int m=0;m<9;m++)
+                        if(a[l][m]==0)
+                            f12(l,m,a,p);
+                }
+
+                for(int j=0;j<9;j++)
+                    for(int l=0;l<9;l++)
+                            for(int m=l+1;m<9;m++)
+                                {
+                                    if(a[j][l]!=0 && a[j][m]!=0)
+                                    {
+                                        if(a[j][l]==a[j][m])
+                                        {flag=1;
+                                        goto label;}
+                                    }
+                                    if(a[l][j]!=0 && a[m][j]!=0)
+                                    {
+                                        if(a[l][j]==a[m][j])
+                                        {flag=1;
+                                        goto label;}
+                                    }
+                                    if(a[j/3*3+l/3][j%3*3+l%3]!=0 && a[j/3*3+m/3][j%3*3+m%3]!=0)
+                                    {
+                                        if(a[j/3*3+l/3][j%3*3+l%3]==a[j/3*3+m/3][j%3*3+m%3])
+                                         {flag=1;
+                                        goto label;}
+                                    }
+                                }
+
+                label:
+                for(int l=0;l<81;l++)
+                    for(int j=0;j<9;j++)
+                        p[l][j]=temp[l][j];
+                for(int l=0;l<9;l++)
+                    for(int j=0;j<9;j++)
+                        a[l][j]=ts[l][j];
+                if(flag==1)
+                    {
+                        f=1;
+                        p[i][v[z]]=0;
+                        break;
+                    }
+                else
+                    z++;
+            }
+        }
+        if(f==1)
+            break;
+        else
+            i++;
+    }
+}
+
+int main()
+{
+    int n;
+
+    cout <<"Enter the number of known numbers-";
+    cin >> n;
+
+    cout << "Enter the known numbers including the positions: ";
+    int a[9][9]={0};
+    int p[81][9]={0};
+    while(n--)
+    {
+        string s;
+        cin >> s;
+        stringstream ss;
+        ss << s;
+        int n1,n2,n3;
+        char ch;
+        ss >> n1 >> ch >>n2 >>ch >> n3;
+        a[n1-1][n2-1]=n3;
+    }
+
+    for(int i=0;i<9;i++)
+        {for(int j=0;j<9;j++)
+        cout << a[i][j]<<" ";
+    cout << endl;}
+    cout<<endl;
+
+    for(int i=0;i<9;i++)
+        for(int j=0;j<9;j++)
+            if(a[i][j]==0)
+                for(int k=1;k<=9;k++)
+                    if(f(i,j,k,a)==1)
+                        p[i*9+j][k-1]=1;
+
+    int num=81;int r=0;
+    int pcount=0;
+    while(num>0)
+    {
+        if(r!=0)
+        {for(int i=0;i<9;i++)
+                    for(int j=0;j<9;j++)
+                        if(a[i][j]==0)
+                        f12(i,j,a,p);
+        num=81;
+        for(int i=0;i<9;i++)
+                    for(int j=0;j<9;j++)
+                        if(a[i][j]!=0)
+                        num=num-1;
+
+        cout<<"Unsolved numbers:"<<num<<endl;
+        for(int i=0;i<9;i++)
+                {for(int j=0;j<9;j++)
+                cout << a[i][j]<<" ";
+                cout << endl;}
+                cout<<endl;}
+        r=1;
+
+        for(int i=0;i<9;i++)
+                    for(int j=0;j<9;j++)
+                        f1(i,j,a,p);
+
+        for(int i=0;i<9;i++)
+                    for(int j=0;j<9;j++)
+                        f2(i,j,a,p);
+
+        for(int i=0;i<9;i++)
+                    {f3(i,a,p);
+                     f4(i,a,p);
+                     f5(i,a,p);}
+
+        int sum=0;
+        for(int i=0;i<9;i++)
+                for(int j=0;j<9;j++)
+                    sum+=f0(i,j,p);
+        if(sum!=pcount)
+        {pcount=sum;
+        continue;}
+
+        for(int i=0;i<9;i++)
+                    {f6(i,a,p);
+                     f7(i,a,p);
+                     f8(i,a,p);}
+
+        for(int i=0;i<9;i++)
+                {f11(i,a,p);}
+
+        for(int i=0;i<9;i++)
+                     {f9(i,a,p);
+                     f10(i,a,p);}
+
+        sum=0;
+        for(int i=0;i<9;i++)
+                for(int j=0;j<9;j++)
+                    sum+=f0(i,j,p);
+        if(sum!=pcount)
+        {pcount=sum;
+        continue;}
+
+        ff(p,a);
+
+        sum=0;
+        for(int i=0;i<9;i++)
+                for(int j=0;j<9;j++)
+                    sum+=f0(i,j,p);
+        if(sum==pcount)
+            break;
+    }
+    if(num==0)
+        cout<<"Solved Sudoku is:"<<endl;
+    else
+        {
+            cout<<"Sudoku can't be solved fully using logical strategies."<<endl;
+            cout<<"It have multiple solutions or require hit and trial."<<endl;
+            cout<<"Partially Solved sudoku is:"<<endl;
+        }
+    for(int i=0;i<9;i++)
+                {for(int j=0;j<9;j++)
+                cout << a[i][j]<<" ";
+                cout << endl;}
+
+    return 0;
+}
